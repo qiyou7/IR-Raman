@@ -2,35 +2,16 @@ from typing import Optional
 import numpy as np
 from spectra_flow.utils import (
     calculate_corr,
-    get_distance,
     apply_gussian_filter,
     apply_lorenz_filter,
-    FT,
-    FT_fft
+    FT
 )
 
-# def calculate_corr_vdipole(dipole: np.ndarray, dt_ps: float, window: int):
-#     v_dipole = (dipole[1:] - dipole[:-1]) / dt_ps # type: ignore
-#     v_dipole -= np.mean(v_dipole, axis = 0, keepdims = True)
-#     corr = np.sum(calculate_corr(v_dipole, v_dipole, window), axis = -1)
-#     return corr
-
-def calculate_corr_vdipole(atomic_dipole: np.ndarray, coords: np.ndarray, cells: np.ndarray, dt: float, window: int):
-    nframes, natom = atomic_dipole.shape[:2]
-    coords = coords[1:-1]
-    cells = cells[1:-1]
-    v_dipole = (atomic_dipole[2:] - atomic_dipole[:-2]) / (2 * dt)
-    corr_intra = calculate_corr(v_dipole, v_dipole, window)
-    dipole_cutoff = np.empty_like(v_dipole)
-    for atom_i in range(natom):
-        #dis_mask = np.ones((nframes-2, natom, 1), dtype=bool)  # change to correct shape
-        dis_mask = get_distance(coords, coords[:, [atom_i], :], cells) >=0
-        #print('shape of dis_mask',dis_mask.shape)
-        dis_mask[:, atom_i] = False
-        dipole_cutoff[:, atom_i] = np.matmul(v_dipole.transpose(0, 2, 1), dis_mask).squeeze(2)
-    corr_inter = calculate_corr(dipole_cutoff, v_dipole, window)
-    return corr_intra, corr_inter
-
+def calculate_corr_vdipole(dipole: np.ndarray, dt_ps: float, window: int):
+    v_dipole = (dipole[1:] - dipole[:-1]) / dt_ps # type: ignore
+    v_dipole -= np.mean(v_dipole, axis = 0, keepdims = True)
+    corr = np.sum(calculate_corr(v_dipole, v_dipole, window), axis = -1)
+    return corr
 
 def calculate_ir(corr: np.ndarray, width: float, dt_ps: float, temperature: float, 
                  M: Optional[int] = None, filter_type: str = "gaussian"):
@@ -52,7 +33,7 @@ def calculate_ir(corr: np.ndarray, width: float, dt_ps: float, temperature: floa
         C = apply_lorenz_filter(corr, width, dt_ps)
     else:
         raise NotImplementedError(f"Unknown filter type: {filter_type}!")
-    freq_ps, CHAT = FT_fft(dt_ps, C, M)
+    freq_ps, CHAT = FT(dt_ps, C, M)
     d_omega, CHAT = _change_unit(freq_ps, CHAT, temperature)
     return np.stack([np.arange(CHAT.shape[0]) * d_omega, CHAT], axis = 1)
 

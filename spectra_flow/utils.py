@@ -480,7 +480,7 @@ def calculate_corr(A: np.ndarray, B: np.ndarray, NMAX: int, window: Optional[int
     corr = corr[window - 1:window + NMAX] / window
     return corr
 
-def apply_gaussian_filter(corr: np.ndarray, width: float):
+def apply_gussian_filter(corr: np.ndarray, width: float):
     """
     Apply gaussian filter. Parameter `width` means the smoothing width.
     """
@@ -568,22 +568,6 @@ def FILONC(DT: float, DOM: float, C: np.ndarray, M: Optional[int] = None) -> np.
     CO = np.apply_along_axis(CAL_C0, axis = 1, arr = THETA[:, np.newaxis], args = (C[1::2], np.arange(1, NMAX, 2)))
     CHAT = 2.0 * ( ALPHA * C[NMAX] * np.sin ( OMEGA * TMAX ) + BETA * CE + GAMMA * CO ) * DT
     return CHAT
-
-def FT_fft(DT: float, C: np.ndarray, M: Optional[int] = None) -> np.ndarray:
-
-    nmax = len(C) - 1
-    if nmax % 2 != 0:
-        nmax -= 1
-        C = C[:-1] 
-    if M is None:
-        M = nmax  
-    freq = 1 / (M * DT)
-    half = M // 2
-    freq = freq[:half]
-    Chat = np.fft.fft(C, n=M)
-    CHAT = np.real(Chat) 
-    return freq, CHAT
-
 
 def FT(DT: float, C: np.ndarray, M: Optional[int] = None) -> np.ndarray:
     """
