@@ -4,8 +4,8 @@ import numpy as np
 from copy import deepcopy
 import dpdata, json
 from pathlib import Path
-from dflow.executor import Executor
-from dflow.plugins.dispatcher import DispatcherExecutor
+#from dflow.executor import Executor
+#from dflow.plugins.dispatcher import DispatcherExecutor
 
 def kmesh(nx: int, ny: int, nz: int):
     kx = (np.arange(nx) / nx).reshape(-1, 1) * np.array([1, 0, 0])
@@ -44,10 +44,10 @@ def load_json(path: Union[str, Path]):
     return setting
 
 def bohrium_login(account_config: Optional[dict] = None, debug: bool = False):
-    from dflow import config, s3_config
-    from dflow.plugins import bohrium
-    from dflow.plugins.bohrium import TiefblueClient
-    from getpass import getpass
+    #from dflow import config, s3_config
+    #from dflow.plugins import bohrium
+    #from dflow.plugins.bohrium import TiefblueClient
+    #from getpass import getpass
     if debug:
         config["mode"] = "debug"
         return 
@@ -578,9 +578,7 @@ def FT_fft(DT: float, C: np.ndarray, M: Optional[int] = None) -> np.ndarray:
     if M is None:
         M = nmax  
     freq = 1 / (M * DT)
-    half = M // 2
-    freq = freq[:half]
-    Chat = np.fft.fft(C, n=M)
+    Chat = np.fft.rfft(C, n=M)
     CHAT = np.real(Chat) 
     return freq, CHAT
 
@@ -739,20 +737,6 @@ def diff_8(g):
     g_4 = np.dot(w[::-1], b)
     return g_3, g_4
 
-def get_executor(exec_config: dict) -> Executor:
-    """
-    Get executor. Only support bohrium now.
-    """
-    if exec_config["type"] == "bohrium":
-        return DispatcherExecutor(machine_dict = {
-            "batch_type": "Bohrium",
-            "context_type": "Bohrium",
-            "remote_profile": {
-                "input_data": exec_config["params"],
-            },
-        },)
-    else:
-        raise NotImplementedError(f"Unknown executor type: {exec_config['type']}")
 
 
 def _read_dump(f_dump: IO, f_cells: IO, f_coords: IO, f_types: IO, BUFFER: int = 50000):
