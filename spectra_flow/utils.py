@@ -578,7 +578,9 @@ def FT_fft(DT: float, C: np.ndarray, M: Optional[int] = None) -> np.ndarray:
     if M is None:
         M = nmax  
     freq = 1 / (M * DT)
+    half = M //2
     Chat = np.fft.rfft(C, n=M)
+    #Chat = np.fft.fft(C, n=M)[:half]
     CHAT = np.real(Chat) 
     return freq, CHAT
 

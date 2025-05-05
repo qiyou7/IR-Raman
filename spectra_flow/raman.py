@@ -90,7 +90,7 @@ def calculate_raman(corr: np.ndarray, width: float, dt_ps: float, temperature: f
     print("width        = ", width)
     if filter_type == "gaussian":
         width = width * tmax / 100.0 * 3
-        C = apply_gussian_filter(corr, width)
+        C = apply_gaussian_filter(corr, width)
     elif filter_type == "lorenz":
         C = apply_lorenz_filter(corr, width, dt_ps)
     else:

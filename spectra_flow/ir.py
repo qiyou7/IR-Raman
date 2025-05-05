@@ -54,7 +54,8 @@ def calculate_ir(corr: np.ndarray, width: float, dt_ps: float, temperature: floa
         raise NotImplementedError(f"Unknown filter type: {filter_type}!")
     freq_ps, CHAT = FT_fft(dt_ps, C, M)
     d_omega, CHAT = _change_unit(freq_ps, CHAT, temperature)
-    return np.stack([np.arange(CHAT.shape[0]) * d_omega, CHAT], axis = 1)
+   # return np.stack([np.arange(CHAT.shape[0]) * d_omega, CHAT], axis = 1)
+    return np.arange(CHAT.shape[0]) * d_omega, CHAT
 
 def _change_unit(freq_ps, CHAT: np.ndarray, temperature: float):
     a0 = 0.52917721067e-10  # m
