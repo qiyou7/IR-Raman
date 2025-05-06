@@ -15,7 +15,7 @@ from spectra_flow.utils import (
 #     corr = np.sum(calculate_corr(v_dipole, v_dipole, window), axis = -1)
 #     return corr
 
-def calculate_corr_vdipole(atomic_dipole: np.ndarray, coords: np.ndarray, cells: np.ndarray, dt: float, window: int):
+def calculate_corr_vdipole(atomic_dipole: np.ndarray, coords: np.ndarray, cells: np.ndarray, dt: float, window: int, rc:float):
     nframes, natom = atomic_dipole.shape[:2]
     coords = coords[1:-1]
     cells = cells[1:-1]
@@ -23,9 +23,7 @@ def calculate_corr_vdipole(atomic_dipole: np.ndarray, coords: np.ndarray, cells:
     corr_intra = calculate_corr(v_dipole, v_dipole, window)
     dipole_cutoff = np.empty_like(v_dipole)
     for atom_i in range(natom):
-        #dis_mask = np.ones((nframes-2, natom, 1), dtype=bool)  # change to correct shape
-        dis_mask = get_distance(coords, coords[:, [atom_i], :], cells) >=0
-        #print('shape of dis_mask',dis_mask.shape)
+        dis_mask = get_distance(coords, coords[:, [atom_i], :], cells) < rc
         dis_mask[:, atom_i] = False
         dipole_cutoff[:, atom_i] = np.matmul(v_dipole.transpose(0, 2, 1), dis_mask).squeeze(2)
     corr_inter = calculate_corr(dipole_cutoff, v_dipole, window)

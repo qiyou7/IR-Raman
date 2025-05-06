@@ -27,7 +27,7 @@ from spectra_flow.utils import (
 #     corr_aniso *= 2 / 15
 #     return corr_iso, corr_aniso
 
-def calculate_corr_polar(atomic_polar: np.ndarray, coords: np.ndarray, cells: np.ndarray, window: int):
+def calculate_corr_polar(atomic_polar: np.ndarray, coords: np.ndarray, cells: np.ndarray, window: int, rc: float):
     nframes, natom = atomic_polar.shape[:2]
 
     polar_iso = np.mean(atomic_polar.diagonal(offset = 0, axis1 = -2, axis2 = -1), axis = -1)
@@ -48,8 +48,7 @@ def calculate_corr_polar(atomic_polar: np.ndarray, coords: np.ndarray, cells: np
     polar_aniso_cutoff = np.empty_like(polar_aniso)
 
     for atom_i in range(natom):
-      #dis_mask = np.ones((nframes, natom, 1), dtype=bool)  # 直接创建正确的形状
-      dis_mask = get_distance(coords, coords[:, [atom_i], :], cells) >=0
+      dis_mask = get_distance(coords, coords[:, [atom_i], :], cells) < rc
       dis_mask[:, atom_i] = False
       polar_iso_cutoff[:, atom_i] = np.matmul(polar_iso[:, None, :], dis_mask).squeeze((1, 2))
       polar_aniso_cutoff[:, atom_i] = np.matmul(polar_aniso.transpose(0, 2, 1), dis_mask).squeeze(2)
