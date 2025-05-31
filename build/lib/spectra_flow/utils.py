@@ -1,11 +1,11 @@
-from typing import Dict, List, Mapping, Optional, Tuple, Union, IO
+from typing import Dict, List, Mapping, Optional, Tuple, Union, IO 
 from tempfile import TemporaryFile
 import numpy as np
 from copy import deepcopy
 import dpdata, json
 from pathlib import Path
-from dflow.executor import Executor
-from dflow.plugins.dispatcher import DispatcherExecutor
+#from dflow.executor import Executor
+#from dflow.plugins.dispatcher import DispatcherExecutor
 
 def kmesh(nx: int, ny: int, nz: int):
     kx = (np.arange(nx) / nx).reshape(-1, 1) * np.array([1, 0, 0])
@@ -44,10 +44,10 @@ def load_json(path: Union[str, Path]):
     return setting
 
 def bohrium_login(account_config: Optional[dict] = None, debug: bool = False):
-    from dflow import config, s3_config
-    from dflow.plugins import bohrium
-    from dflow.plugins.bohrium import TiefblueClient
-    from getpass import getpass
+    #from dflow import config, s3_config
+    #from dflow.plugins import bohrium
+    #from dflow.plugins.bohrium import TiefblueClient
+    #from getpass import getpass
     if debug:
         config["mode"] = "debug"
         return 
@@ -480,7 +480,7 @@ def calculate_corr(A: np.ndarray, B: np.ndarray, NMAX: int, window: Optional[int
     corr = corr[window - 1:window + NMAX] / window
     return corr
 
-def apply_gussian_filter(corr: np.ndarray, width: float):
+def apply_gaussian_filter(corr: np.ndarray, width: float):
     """
     Apply gaussian filter. Parameter `width` means the smoothing width.
     """
@@ -568,6 +568,22 @@ def FILONC(DT: float, DOM: float, C: np.ndarray, M: Optional[int] = None) -> np.
     CO = np.apply_along_axis(CAL_C0, axis = 1, arr = THETA[:, np.newaxis], args = (C[1::2], np.arange(1, NMAX, 2)))
     CHAT = 2.0 * ( ALPHA * C[NMAX] * np.sin ( OMEGA * TMAX ) + BETA * CE + GAMMA * CO ) * DT
     return CHAT
+
+def FT_fft(DT: float, C: np.ndarray, M: Optional[int] = None) -> np.ndarray:
+
+    nmax = len(C) - 1
+    if nmax % 2 != 0:
+        nmax -= 1
+        C = C[:-1] 
+    if M is None:
+        M = nmax  
+    freq = 1 / (M * DT)
+    half = M //2
+    Chat = np.fft.rfft(C, n=M)
+    #Chat = np.fft.fft(C, n=M)[:half]
+    CHAT = np.real(Chat) 
+    return freq, CHAT
+
 
 def FT(DT: float, C: np.ndarray, M: Optional[int] = None) -> np.ndarray:
     """
@@ -723,20 +739,6 @@ def diff_8(g):
     g_4 = np.dot(w[::-1], b)
     return g_3, g_4
 
-def get_executor(exec_config: dict) -> Executor:
-    """
-    Get executor. Only support bohrium now.
-    """
-    if exec_config["type"] == "bohrium":
-        return DispatcherExecutor(machine_dict = {
-            "batch_type": "Bohrium",
-            "context_type": "Bohrium",
-            "remote_profile": {
-                "input_data": exec_config["params"],
-            },
-        },)
-    else:
-        raise NotImplementedError(f"Unknown executor type: {exec_config['type']}")
 
 
 def _read_dump(f_dump: IO, f_cells: IO, f_coords: IO, f_types: IO, BUFFER: int = 50000):
