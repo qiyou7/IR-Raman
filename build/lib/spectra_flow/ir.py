@@ -23,7 +23,7 @@ def calculate_corr_vdipole(atomic_dipole: np.ndarray, coords: np.ndarray, cells:
     corr_intra = calculate_corr(v_dipole, v_dipole, window)
     dipole_cutoff = np.empty_like(v_dipole)
     for atom_i in range(natom):
-        distance = get_distance(coords, coords[:, [atom_i], :], cells)
+        distances = get_distance(coords, coords[:, [atom_i], :], cells)
         dis_mask = distances > 0 if rc is None else distances < rc
 
         dis_mask[:, atom_i] = False

@@ -48,7 +48,7 @@ def calculate_corr_polar(atomic_polar: np.ndarray, coords: np.ndarray, cells: np
     polar_aniso_cutoff = np.empty_like(polar_aniso)
 
     for atom_i in range(natom):
-      distance = get_distance(coords, coords[:, [atom_i], :], cells)
+      distances = get_distance(coords, coords[:, [atom_i], :], cells)
       dis_mask = distances > 0 if rc is None else distances < rc         
       #dis_mask = get_distance(coords, coords[:, [atom_i], :], cells) < rc
       dis_mask[:, atom_i] = False
